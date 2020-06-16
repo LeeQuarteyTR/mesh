@@ -1016,7 +1016,7 @@ def decode(estimator,
     list of decoded strings
   """
   result_iter = estimator.predict(
-      input_fn, checkpoint_path=checkpoint_path)
+      input_fn, checkpoint_path=checkpoint_path, yield_single_examples=False)
 
   def _maybe_detokenize(value, vocab):
     if isinstance(value, six.binary_type):
@@ -1026,11 +1026,15 @@ def decode(estimator,
   decodes = []
   for i, result in enumerate(result_iter):
     input_string = _maybe_detokenize(
-        result["inputs"], inputs_vocabulary(vocabulary))
-    output_string = _maybe_detokenize(
-        result["outputs"], targets_vocabulary(vocabulary))
+        result["inputs"][0], inputs_vocabulary(vocabulary))
+    
+    output_results = []
+    for output in result["outputs"]:
+        output_results.append(_maybe_detokenize(output, targets_vocabulary(vocabulary)))
+        output_string = b'; '.join(output_results)
     decodes.append(output_string)
-    if i & (i - 1) == 0:
+  
+  if i & (i - 1) == 0:
       # LOG every power of 2.
       tf.logging.info("decoded {}: {}".format(i, input_string))
       tf.logging.info("            -> {}".format(output_string))

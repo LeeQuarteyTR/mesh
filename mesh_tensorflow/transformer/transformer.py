@@ -1322,7 +1322,7 @@ class Unitransformer(object):
         mesh_shape=self.mesh_shape,
         layout=self.layout)
     return mtf.gather(
-        beams, mtf.constant(inputs.mesh, 0, dtype=tf.int32), beam_dim)
+        beams, mtf.constant(inputs.mesh, 0, dtype=tf.int32), batch_dims[0])
 
 
 @gin.configurable
